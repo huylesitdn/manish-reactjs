@@ -7,12 +7,14 @@ import { BrowserRouter, Switch, Route } from 'react-router-dom';
 
 import Home from './containers/Home';
 import Login from './containers/Login';
+import NewAppointment from './containers/NewAppointment';
 
 ReactDOM.render(
 	<React.StrictMode>
 		<BrowserRouter>
 			<Switch>
 				<Route path="/login" component={Login} />
+				<Route path="/new-appointment" component={NewAppointment} />
 				<Route path="/" component={Home} />
 			</Switch>
 		</BrowserRouter>

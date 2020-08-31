@@ -1,0 +1,33 @@
+.new-appointment {
+	.new-appoint-content {
+		width: 600px;
+		margin: 60px auto;
+		border: 1px solid #ddd;
+		padding: 30px 45px;
+		border-radius: 15px;
+		.app-item {
+			margin-bottom: 24px;
+			h3 {
+				font-weight: bold;
+      }
+      .sub-item{
+        margin-bottom: 15px;
+        display: inline-flex;
+        width: 100%;
+        .btn-remove{
+          margin-left: 15px;
+        }
+      }
+      .action-new{
+        text-align: right;
+      }
+		}
+		.actions {
+      text-align: center;
+      margin-top: 45px;
+			.ant-btn {
+				margin: 0 15px;
+			}
+		}
+	}
+}
