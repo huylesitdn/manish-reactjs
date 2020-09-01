@@ -54,6 +54,7 @@ function NewAppointment(props) {
 	};
 
 	const onFinish = values => {
+		console.log('values: ', values);
 		let userID = localStorage.getItem('userID');
 		let token = localStorage.getItem('_token');
 
@@ -63,11 +64,13 @@ function NewAppointment(props) {
 
 		let interval = [];
 		for (let i = 0; i < totalInterval; i++) {
-			let obj = {
-				start_time: dataFormStep1[`time_interval_${i}`][0].format('hh:mm'),
-				end_time: dataFormStep1[`time_interval_${i}`][1].format('hh:mm'),
-			};
-			interval.push(obj);
+			if (dataFormStep1[`time_interval_${i}`]) {
+				let obj = {
+					start_time: dataFormStep1[`time_interval_${i}`][0].format('hh:mm'),
+					end_time: dataFormStep1[`time_interval_${i}`][1].format('hh:mm'),
+				};
+				interval.push(obj);
+			}
 		}
 
 		let serviceoption = [];
@@ -317,17 +320,28 @@ function NewAppointment(props) {
 						</>
 					)}
 
-					{step === 3 ? (
+					{step === 3 && (
 						<div className="actions">
 							<Button onClick={() => setStep(2)}>Back</Button>
-							<Button type="primary" htmlType="submit" >
+							<Button type="primary" htmlType="submit">
+								Create
+							</Button>
+						</div>
+					)}
+
+					{step === 2 && (
+						<div className="actions">
+							<Button onClick={() => backStep()}>Back</Button>
+							<Button type="primary" onClick={() => nextStep()}>
 								Continue
 							</Button>
 						</div>
-					) : (
+					)}
+
+					{step === 1 && (
 						<div className="actions">
 							<Button onClick={() => backStep()}>Back</Button>
-							<Button type="primary" htmlType="button" onClick={() => nextStep()}>
+							<Button type="primary" onClick={() => nextStep()}>
 								Continue
 							</Button>
 						</div>
