@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import 'react-day-picker/lib/style.css';
 import 'antd/dist/antd.css';
 import './index.scss';
 import * as serviceWorker from './serviceWorker';

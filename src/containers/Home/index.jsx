@@ -44,9 +44,11 @@ function Home(props) {
 		<div className="home-page">
 			<div className="home-content">
 				<h1>Home page</h1>
-				<p>
-					<Link to="/new-appointment">Create Appointment</Link>
-				</p>
+				{dataUser && (
+					<p>
+						<Link to="/new-appointment">Create Appointment</Link>
+					</p>
+				)}
 				{dataUser && dataUser.name && <h4 style={{ marginBottom: '30px' }}>Hello {dataUser.name}!</h4>}
 				{dataUser ? <Button onClick={onLogout}>Logout</Button> : <Link to="/login">Login</Link>}
 			</div>

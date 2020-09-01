@@ -3,49 +3,66 @@ import './index.scss';
 import moment from 'moment';
 import { withRouter } from 'react-router-dom';
 import { PlusCircleOutlined, MinusCircleOutlined } from '@ant-design/icons';
-import { Form, Input, InputNumber, Button, DatePicker, TimePicker, Radio, Row, Col, message } from 'antd';
+import { Form, Input, Button, TimePicker, Radio, Row, Col, message, Checkbox } from 'antd';
 import Axios from 'axios';
+import Calendar from 'react-calendar-multiday';
 
 const { RangePicker } = TimePicker;
 
 const URL_CREATE_APPOINTMENT = `https://tgkp8rza8b.execute-api.ap-south-1.amazonaws.com/test/addappiontmentmeetinterval`;
 
 function NewAppointment(props) {
+	const [form] = Form.useForm();
+
+	const [dataForm, setDataForm] = useState(null);
 	const [duration, setDuration] = useState('15MIN');
 	const [totalInterval, setTotalInterval] = useState(1);
 	const [totalDuration, setTotalDuration] = useState(1);
+	const [step, setStep] = useState(1);
+	const [selectedDays, setSelectedDays] = useState([]);
 
 	const onChangeDuration = e => {
-		console.log(e);
 		setDuration(e.target.value);
 	};
 
-	const onFinish = values => {
-		console.log(values);
+	const reactToChange = e => {
+		let results = [];
+		for (let i = 0; i < e.selected.length; i++) {
+			const el = e.selected[i];
+			results.push(moment(el).format('DD-MM-YYYY'));
+		}
+		setSelectedDays(results);
+	};
 
-		const { appiontment, default_timeout } = values;
+	const nextStep = () => {
+		setDataForm(form.getFieldsValue());
+		setStep(2);
+	};
+
+	const onFinish = values => {
+		let userID = localStorage.getItem('userID');
+		let token = localStorage.getItem('_token');
+
+		const { today, week } = values;
+		const { appiontment, default_timeout } = dataForm;
 
 		let interval = [];
 		for (let i = 0; i < totalInterval; i++) {
 			let obj = {
-				start_time: values[`time_interval_${i}`][0].format('hh:mm'),
-				end_time: values[`time_interval_${i}`][1].format('hh:mm'),
+				start_time: dataForm[`time_interval_${i}`][0].format('hh:mm'),
+				end_time: dataForm[`time_interval_${i}`][1].format('hh:mm'),
 			};
-			console.log('interval obj: ', obj);
 			interval.push(obj);
 		}
-		console.log('interval: ', interval);
 
 		let serviceoption = [];
 		for (let i = 0; i < totalDuration; i++) {
 			let obj = {
-				serviceName: values[`serviceName_${i}`],
-				time: values[`time_${i}`],
+				serviceName: dataForm[`serviceName_${i}`],
+				time: dataForm[`time_${i}`],
 			};
-			console.log('serviceoption obj: ', obj);
 			serviceoption.push(obj);
 		}
-		console.log('serviceoption: ', serviceoption);
 
 		let data = {
 			appiontment,
@@ -54,20 +71,21 @@ function NewAppointment(props) {
 			serviceoption,
 			setDate: [
 				{
-					today: 'true',
-					week: [1, 2],
-					customday: ['12-8-2020', '13-8-2020'],
-					weekholidays: [1, 2, 3],
-					customholidays: ['15-8-2020', '16-8-2020'],
+					today: today[0] ? true : false,
+					week: week,
+					customday: selectedDays,
+					weekholidays: [],
+					// weekholidays: [1, 2, 3],
+					customholidays: [],
+					// customholidays: ['15-8-2020', '16-8-2020'],
 				},
 			],
-			userId: '27771wwqkqas7kkk774www24',
-			spaceId: '123',
+			userId: userID,
+			spaceId: userID,
 		};
 
 		console.log('data: ', data);
 
-		let token = localStorage.getItem('_token');
 		if (token) {
 			Axios.post(URL_CREATE_APPOINTMENT, data, {
 				headers: {
@@ -97,7 +115,7 @@ function NewAppointment(props) {
 				results.push(
 					<div key={i} className="sub-item">
 						<Form.Item name={`time_interval_${i}`}>
-							<RangePicker format="h:mm" bordered={true} />
+							<RangePicker format="HH:mm" bordered={true} />
 						</Form.Item>
 					</div>
 				);
@@ -105,7 +123,7 @@ function NewAppointment(props) {
 				results.push(
 					<div key={i} className="sub-item">
 						<Form.Item name={`time_interval_${i}`}>
-							<RangePicker format="h:mm" bordered={true} />
+							<RangePicker format="HH:mm" bordered={true} />
 						</Form.Item>
 						<Button
 							onClick={() => setTotalInterval(totalInterval - 1)}
@@ -172,63 +190,110 @@ function NewAppointment(props) {
 	return (
 		<div className="new-appointment">
 			<div className="new-appoint-content">
-				<Form onFinish={onFinish} layout="vertical">
-					<div className="app-item">
-						<h3>Set appointment timing:</h3>
-						<Form.Item label="Appointment name:" name="appiontment">
-							<Input placeholder="Enter Appointment name" />
-						</Form.Item>
-					</div>
+				<Form form={form} onFinish={onFinish} layout="vertical">
+					{step === 1 && (
+						<>
+							<div className="app-item">
+								<h3>Set appointment timing:</h3>
+								<Form.Item label="Appointment name:" name="appiontment">
+									<Input placeholder="Enter Appointment name" />
+								</Form.Item>
+							</div>
 
-					<div className="app-item">
-						<h3>Select time duration:</h3>
+							<div className="app-item">
+								<h3>Select time duration:</h3>
 
-						<Form.Item name="default_timeout">
-							<Radio.Group value={duration} onChange={onChangeDuration}>
-								<Radio.Button value="15MIN">15 Min</Radio.Button>
-								<Radio.Button value="20MIN">20 Min</Radio.Button>
-								<Radio.Button value="30MIN">30 Min</Radio.Button>
-							</Radio.Group>
-						</Form.Item>
-					</div>
+								<Form.Item name="default_timeout">
+									<Radio.Group value={duration} onChange={onChangeDuration}>
+										<Radio.Button value="15MIN">15 Min</Radio.Button>
+										<Radio.Button value="20MIN">20 Min</Radio.Button>
+										<Radio.Button value="30MIN">30 Min</Radio.Button>
+									</Radio.Group>
+								</Form.Item>
+							</div>
 
-					<div className="app-item">
-						<h3>Set time Interval: A</h3>
+							<div className="app-item">
+								<h3>Set time Interval: A</h3>
 
-						{/* <div className="sub-item">
-							<RangePicker use12Hours format="h:mm a" bordered={true} />
-							<Button className="btn-remove" type="link" danger icon={<MinusCircleOutlined />} />
-						</div> */}
+								{renderTimeInterval()}
 
-						{renderTimeInterval()}
+								<div className="action-new">
+									<Button
+										onClick={() => setTotalInterval(totalInterval + 1)}
+										type="link"
+										icon={<PlusCircleOutlined />}
+									/>
+								</div>
+							</div>
 
-						<div className="action-new">
-							<Button
-								onClick={() => setTotalInterval(totalInterval + 1)}
-								type="link"
-								icon={<PlusCircleOutlined />}
-							/>
+							<div className="app-item">
+								<h3>Services time duration:</h3>
+								{renderTimeDuration()}
+								<div className="action-new">
+									<Button
+										onClick={() => setTotalDuration(totalDuration + 1)}
+										type="link"
+										icon={<PlusCircleOutlined />}
+									/>
+								</div>
+							</div>
+						</>
+					)}
+
+					{step === 2 && (
+						<>
+							<div className="app-item">
+								<h3>This appointment for: Interval A</h3>
+								<Form.Item name="today">
+									<Checkbox.Group>
+										<Checkbox value="true">Only for today</Checkbox>
+									</Checkbox.Group>
+								</Form.Item>
+							</div>
+
+							<div className="app-item">
+								<h3>Every week days:</h3>
+								<Form.Item name="week">
+									<Checkbox.Group>
+										<Checkbox value="1">Sunday</Checkbox>
+										<Checkbox value="2">Monday</Checkbox>
+										<Checkbox value="3">Tuesday</Checkbox>
+										<Checkbox value="4">Wednesday</Checkbox>
+										<Checkbox value="5">Thursday</Checkbox>
+										<Checkbox value="6">Friday</Checkbox>
+										<Checkbox value="7">Saturday</Checkbox>
+									</Checkbox.Group>
+								</Form.Item>
+							</div>
+
+							<div className="app-item">
+								<h3>Select custom days:</h3>
+
+								<Calendar
+									format="DD-MM-YYYY"
+									reset={false}
+									isMultiple={true}
+									onChange={reactToChange}
+								/>
+							</div>
+						</>
+					)}
+
+					{step === 2 ? (
+						<div className="actions">
+							<Button onClick={() => setStep(1)}>Back</Button>
+							<Button type="primary" htmlType="submit">
+								Continue
+							</Button>
 						</div>
-					</div>
-
-					<div className="app-item">
-						<h3>Services time duration:</h3>
-						{renderTimeDuration()}
-						<div className="action-new">
-							<Button
-								onClick={() => setTotalDuration(totalDuration + 1)}
-								type="link"
-								icon={<PlusCircleOutlined />}
-							/>
+					) : (
+						<div className="actions">
+							<Button onClick={() => props.history.push('/')}>Back</Button>
+							<Button type="primary" htmlType="button" onClick={() => nextStep()}>
+								Continue
+							</Button>
 						</div>
-					</div>
-
-					<div className="actions">
-						<Button>Back</Button>
-						<Button type="primary" htmlType="submit">
-							Continue
-						</Button>
-					</div>
+					)}
 				</Form>
 			</div>
 		</div>

@@ -20,7 +20,13 @@
       }
       .action-new{
         text-align: right;
-      }
+			}
+			.ant-checkbox-group{
+				.ant-checkbox-wrapper{
+					width: 100%;
+					margin: 0 0 15px;
+				}
+			}
 		}
 		.actions {
       text-align: center;

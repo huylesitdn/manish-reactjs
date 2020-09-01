@@ -21,6 +21,7 @@ function Login(props) {
 				if (res.status === 200) {
 					message.success('Login successfully!');
 					localStorage.setItem('_token', res.data.token);
+					localStorage.setItem('userID', res.data.spaceId);
 					props.history.push('/');
 				}
 			})
