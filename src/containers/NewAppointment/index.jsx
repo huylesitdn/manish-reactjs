@@ -14,7 +14,8 @@ const URL_CREATE_APPOINTMENT = `https://tgkp8rza8b.execute-api.ap-south-1.amazon
 function NewAppointment(props) {
 	const [form] = Form.useForm();
 
-	const [dataForm, setDataForm] = useState(null);
+	const [dataFormStep1, setDataFormStep1] = useState(null);
+	const [dataFormStep2, setDataFormStep2] = useState(null);
 	const [duration, setDuration] = useState('15MIN');
 	const [totalInterval, setTotalInterval] = useState(1);
 	const [totalDuration, setTotalDuration] = useState(1);
@@ -35,22 +36,36 @@ function NewAppointment(props) {
 	};
 
 	const nextStep = () => {
-		setDataForm(form.getFieldsValue());
-		setStep(2);
+		console.log('data form: ', form.getFieldsValue());
+		if (step === 1) {
+			setDataFormStep1(form.getFieldsValue());
+		} else if (step === 2) {
+			setDataFormStep2(form.getFieldsValue());
+		}
+		setStep(step + 1);
+	};
+
+	const backStep = () => {
+		if (step === 1) {
+			props.history.push('/');
+		} else {
+			setStep(step - 1);
+		}
 	};
 
 	const onFinish = values => {
 		let userID = localStorage.getItem('userID');
 		let token = localStorage.getItem('_token');
 
-		const { today, week } = values;
-		const { appiontment, default_timeout } = dataForm;
+		const { weekholidays } = values;
+		const { today, week } = dataFormStep2;
+		const { appiontment, default_timeout } = dataFormStep1;
 
 		let interval = [];
 		for (let i = 0; i < totalInterval; i++) {
 			let obj = {
-				start_time: dataForm[`time_interval_${i}`][0].format('hh:mm'),
-				end_time: dataForm[`time_interval_${i}`][1].format('hh:mm'),
+				start_time: dataFormStep1[`time_interval_${i}`][0].format('hh:mm'),
+				end_time: dataFormStep1[`time_interval_${i}`][1].format('hh:mm'),
 			};
 			interval.push(obj);
 		}
@@ -58,8 +73,8 @@ function NewAppointment(props) {
 		let serviceoption = [];
 		for (let i = 0; i < totalDuration; i++) {
 			let obj = {
-				serviceName: dataForm[`serviceName_${i}`],
-				time: dataForm[`time_${i}`],
+				serviceName: dataFormStep1[`serviceName_${i}`],
+				time: dataFormStep1[`time_${i}`],
 			};
 			serviceoption.push(obj);
 		}
@@ -71,12 +86,16 @@ function NewAppointment(props) {
 			serviceoption,
 			setDate: [
 				{
+					// step 2
 					today: today[0] ? true : false,
 					week: week,
+
 					customday: selectedDays,
-					weekholidays: [],
+
+					// step 3
+					weekholidays: weekholidays,
 					// weekholidays: [1, 2, 3],
-					customholidays: [],
+					customholidays: selectedDays,
 					// customholidays: ['15-8-2020', '16-8-2020'],
 				},
 			],
@@ -265,6 +284,25 @@ function NewAppointment(props) {
 									</Checkbox.Group>
 								</Form.Item>
 							</div>
+						</>
+					)}
+
+					{step === 3 && (
+						<>
+							<div className="app-item">
+								<h3>Every week days:</h3>
+								<Form.Item name="weekholidays">
+									<Checkbox.Group>
+										<Checkbox value="1">Sunday</Checkbox>
+										<Checkbox value="2">Monday</Checkbox>
+										<Checkbox value="3">Tuesday</Checkbox>
+										<Checkbox value="4">Wednesday</Checkbox>
+										<Checkbox value="5">Thursday</Checkbox>
+										<Checkbox value="6">Friday</Checkbox>
+										<Checkbox value="7">Saturday</Checkbox>
+									</Checkbox.Group>
+								</Form.Item>
+							</div>
 
 							<div className="app-item">
 								<h3>Select custom days:</h3>
@@ -279,16 +317,16 @@ function NewAppointment(props) {
 						</>
 					)}
 
-					{step === 2 ? (
+					{step === 3 ? (
 						<div className="actions">
-							<Button onClick={() => setStep(1)}>Back</Button>
-							<Button type="primary" htmlType="submit">
+							<Button onClick={() => setStep(2)}>Back</Button>
+							<Button type="primary" htmlType="submit" >
 								Continue
 							</Button>
 						</div>
 					) : (
 						<div className="actions">
-							<Button onClick={() => props.history.push('/')}>Back</Button>
+							<Button onClick={() => backStep()}>Back</Button>
 							<Button type="primary" htmlType="button" onClick={() => nextStep()}>
 								Continue
 							</Button>

@@ -37,6 +37,7 @@ function Home(props) {
 
 	const onLogout = () => {
 		localStorage.removeItem('_token');
+		localStorage.removeItem('userID');
 		props.history.push('/login');
 	};
 
