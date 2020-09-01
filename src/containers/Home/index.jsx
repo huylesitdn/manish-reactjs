@@ -31,6 +31,8 @@ function Home(props) {
 				}
 			})
 			.catch(err => {
+				localStorage.removeItem('_token');
+				localStorage.removeItem('userID');
 				console.log(err);
 			});
 	};

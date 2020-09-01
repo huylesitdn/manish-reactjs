@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './index.scss';
 import moment from 'moment';
 import { withRouter } from 'react-router-dom';
@@ -21,6 +21,14 @@ function NewAppointment(props) {
 	const [totalDuration, setTotalDuration] = useState(1);
 	const [step, setStep] = useState(1);
 	const [selectedDays, setSelectedDays] = useState([]);
+
+	useEffect(() => {
+		let token = localStorage.getItem('_token');
+		console.log(token)
+		if(!token){
+			props.history.push('/login')
+		}
+	}, [props])
 
 	const onChangeDuration = e => {
 		setDuration(e.target.value);
